@@ -1,0 +1,8 @@
+{
+  "registers": [
+    { "name": "AX", "size": 1 },
+    { "name": "BX", "size": 1 },
+    { "name": "CX", "size": 1 },
+    { "name": "DX", "size": 1 }
+  ]
+}

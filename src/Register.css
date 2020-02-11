@@ -1,0 +1,28 @@
+.Register {
+  margin-bottom: 10px;
+}
+
+.Register-change {
+  margin-bottom: 10px;
+  animation: registerFlash 1s forwards;
+}
+
+@keyframes registerFlash {
+  0% {
+    background-color: none;
+  }
+  25% {
+    background-color: rgb(255, 87, 34);
+  }
+  75% {
+    background-color: rgb(255, 87, 34);
+  }
+  100% {
+    background-color: none;
+  }
+}
+
+.Register-name {
+  font-weight: bold;
+  margin-right: 15px;
+}
