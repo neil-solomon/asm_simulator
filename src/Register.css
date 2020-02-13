@@ -1,10 +1,13 @@
 .Register {
-  margin-bottom: 10px;
+  font-size: 14px;
+  margin-bottom: 20px;
 }
 
 .Register-change {
-  margin-bottom: 10px;
-  animation: registerFlash 1s forwards;
+  font-size: 14px;
+  margin-bottom: 20px;
+  border-radius: 5px;
+  animation: registerFlash 0.25s forwards;
 }
 
 @keyframes registerFlash {
@@ -25,4 +28,16 @@
 .Register-name {
   font-weight: bold;
   margin-right: 15px;
+}
+
+.Register-mainRegister {
+  display: inline-block;
+  vertical-align: top;
+  margin-right: 50px;
+}
+
+.Register-subRegisters {
+  display: inline-block;
+  vertical-align: top;
+  margin-left: 50px;
 }

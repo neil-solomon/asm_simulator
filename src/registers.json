@@ -1,8 +1,8 @@
 {
   "registers": [
-    { "name": "AX", "size": 1 },
-    { "name": "BX", "size": 1 },
-    { "name": "CX", "size": 1 },
-    { "name": "DX", "size": 1 }
+    { "name": "AX", "size": 2, "subRegisters": ["AH", "AL"] },
+    { "name": "BX", "size": 2, "subRegisters": ["BH", "BL"] },
+    { "name": "CX", "size": 2, "subRegisters": ["CH", "CL"] },
+    { "name": "DX", "size": 2, "subRegisters": ["DH", "DL"] }
   ]
 }
