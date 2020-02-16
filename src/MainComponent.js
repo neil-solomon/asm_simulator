@@ -33,8 +33,7 @@ export default class MainComponent extends React.Component {
   }
 
   processNextInstruction() {
-    var codeInput,
-      instruction,
+    var instruction,
       destination,
       source,
       error = true,
@@ -53,17 +52,167 @@ export default class MainComponent extends React.Component {
       error = false;
     }
     if (instruction && destination && source) {
-      switch (instruction) {
-        case "MOV":
-          var destinationAndSource = this.findDestinationAndSource(
-            registers,
-            destination,
-            source
-          );
-          console.log(destinationAndSource);
-          break;
-        default:
-          break;
+      var destinationAndSource = this.findDestinationAndSource(
+        registers,
+        destination,
+        source
+      );
+      var dIx = destinationAndSource.destinationIx,
+        sdIx = destinationAndSource.subDestinationIx,
+        sourceValue = destinationAndSource.source;
+      //console.log(dIx, sdIx, sourceValue);
+      if (dIx !== null && sourceValue !== null) {
+        error = false;
+        if (sdIx !== null) {
+          while (
+            sourceValue.length <
+            registers[dIx].size / registers[dIx].subRegisters.length
+          ) {
+            sourceValue.unshift(0);
+          }
+          while (
+            sourceValue.length >
+            registers[dIx].size / registers[dIx].subRegisters.length
+          ) {
+            sourceValue.splice(0, 1);
+          }
+        } else {
+          while (sourceValue.length < registers[dIx].size) {
+            sourceValue.unshift(0);
+          }
+          while (sourceValue.length > registers[dIx].size) {
+            sourceValue.splice(0, 1);
+          }
+        }
+        var startIx, endIx;
+        switch (instruction) {
+          case "MOV":
+            if (sdIx !== null) {
+              startIx =
+                sdIx *
+                (registers[dIx].size / registers[dIx].subRegisters.length);
+              endIx =
+                (sdIx + 1) *
+                (registers[dIx].size / registers[dIx].subRegisters.length);
+              for (let i = startIx; i < endIx; ++i) {
+                registers[dIx].valueBi[i] = sourceValue[i - startIx];
+              }
+            } else {
+              for (let i = 0; i < registers[dIx].size; ++i) {
+                registers[dIx].valueBi[i] = sourceValue[i];
+              }
+            }
+            break;
+          case "AND":
+            if (sdIx !== null) {
+              startIx =
+                sdIx *
+                (registers[dIx].size / registers[dIx].subRegisters.length);
+              endIx =
+                (sdIx + 1) *
+                (registers[dIx].size / registers[dIx].subRegisters.length);
+              for (let i = startIx; i < endIx; ++i) {
+                registers[dIx].valueBi[i] =
+                  registers[dIx].valueBi[i] & sourceValue[i - startIx];
+              }
+            } else {
+              for (let i = 0; i < registers[dIx].size; ++i) {
+                registers[dIx].valueBi[i] =
+                  registers[dIx].valueBi[i] & sourceValue[i];
+              }
+            }
+            break;
+          case "NAND":
+            if (sdIx !== null) {
+              startIx =
+                sdIx *
+                (registers[dIx].size / registers[dIx].subRegisters.length);
+              endIx =
+                (sdIx + 1) *
+                (registers[dIx].size / registers[dIx].subRegisters.length);
+              for (let i = startIx; i < endIx; ++i) {
+                registers[dIx].valueBi[i] = !(
+                  registers[dIx].valueBi[i] & sourceValue[i - startIx]
+                )
+                  ? 1
+                  : 0;
+              }
+            } else {
+              for (let i = 0; i < registers[dIx].size; ++i) {
+                registers[dIx].valueBi[i] = !(
+                  registers[dIx].valueBi[i] & sourceValue[i]
+                )
+                  ? 1
+                  : 0;
+              }
+            }
+            break;
+          case "OR":
+            if (sdIx !== null) {
+              startIx =
+                sdIx *
+                (registers[dIx].size / registers[dIx].subRegisters.length);
+              endIx =
+                (sdIx + 1) *
+                (registers[dIx].size / registers[dIx].subRegisters.length);
+              for (let i = startIx; i < endIx; ++i) {
+                registers[dIx].valueBi[i] =
+                  registers[dIx].valueBi[i] | sourceValue[i - startIx];
+              }
+            } else {
+              for (let i = 0; i < registers[dIx].size; ++i) {
+                registers[dIx].valueBi[i] =
+                  registers[dIx].valueBi[i] | sourceValue[i];
+              }
+            }
+            break;
+          case "NOR":
+            if (sdIx !== null) {
+              startIx =
+                sdIx *
+                (registers[dIx].size / registers[dIx].subRegisters.length);
+              endIx =
+                (sdIx + 1) *
+                (registers[dIx].size / registers[dIx].subRegisters.length);
+              for (let i = startIx; i < endIx; ++i) {
+                registers[dIx].valueBi[i] = !(
+                  registers[dIx].valueBi[i] | sourceValue[i - startIx]
+                )
+                  ? 1
+                  : 0;
+              }
+            } else {
+              for (let i = 0; i < registers[dIx].size; ++i) {
+                registers[dIx].valueBi[i] = !(
+                  registers[dIx].valueBi[i] | sourceValue[i]
+                )
+                  ? 1
+                  : 0;
+              }
+            }
+            break;
+          case "XOR":
+            if (sdIx !== null) {
+              startIx =
+                sdIx *
+                (registers[dIx].size / registers[dIx].subRegisters.length);
+              endIx =
+                (sdIx + 1) *
+                (registers[dIx].size / registers[dIx].subRegisters.length);
+              for (let i = startIx; i < endIx; ++i) {
+                registers[dIx].valueBi[i] =
+                  registers[dIx].valueBi[i] ^ sourceValue[i - startIx] ? 1 : 0;
+              }
+            } else {
+              for (let i = 0; i < registers[dIx].size; ++i) {
+                registers[dIx].valueBi[i] =
+                  registers[dIx].valueBi[i] ^ sourceValue[i] ? 1 : 0;
+              }
+            }
+            break;
+          default:
+            break;
+        }
       }
     }
     return { registers: registers, error: error };
@@ -75,7 +224,7 @@ export default class MainComponent extends React.Component {
         sourceIx = null,
         subSourceIx = null,
         subDestinationIx = null,
-        sourceValue;
+        sourceValue = null;
       if (
         isNaN(parseInt(source)) &&
         source[source.length - 1] !== "b" &&
@@ -104,11 +253,27 @@ export default class MainComponent extends React.Component {
             sourceValue = registers[sourceIx].valueBi;
             // console.log("mainSource & mainDestination");
           } else if (subSourceIx !== null && subDestinationIx === null) {
+            sourceValue = registers[sourceIx].valueBi.slice(
+              subSourceIx *
+                (registers[sourceIx].size /
+                  registers[sourceIx].subRegisters.length),
+              (subSourceIx + 1) *
+                (registers[sourceIx].size /
+                  registers[sourceIx].subRegisters.length)
+            );
             // console.log("subSource & mainDestination");
           } else if (subSourceIx === null && destinationIx !== null) {
-            sourceValue = registers[sourceIx].value;
+            sourceValue = registers[sourceIx].valueBi;
             // console.log("mainSource & subDestination");
           } else if (subSourceIx !== null && subDestinationIx !== null) {
+            sourceValue = registers[sourceIx].valueBi.slice(
+              subSourceIx *
+                (registers[sourceIx].size /
+                  registers[sourceIx].subRegisters.length),
+              (subSourceIx + 1) *
+                (registers[sourceIx].size /
+                  registers[sourceIx].subRegisters.length)
+            );
             // console.log("subSource & subDestination");
           }
         }
@@ -193,15 +358,24 @@ export default class MainComponent extends React.Component {
             sourceValue.push(1, 1, 1, 1);
             break;
           default:
-            break;
+            return null;
         }
       }
     } else if (source[source.length - 1] === "b") {
       sourceValue = source.slice(0, source.length - 1).split("");
       for (let i = 0; i < sourceValue.length; ++i) {
         sourceValue[i] = parseInt(sourceValue[i]);
+        if (sourceValue[i] !== 0 && sourceValue[i] !== 1) {
+          return null;
+        }
       }
     } else {
+      for (let i = 0; i < source.length; ++i) {
+        if (isNaN(parseInt(source[i]))) {
+          return null;
+        }
+      }
+      source = parseInt(source);
       while (source) {
         sourceValue.unshift(source % 2);
         source = Math.floor(source / 2);
@@ -234,7 +408,6 @@ export default class MainComponent extends React.Component {
     this.setState({
       lineNumbers,
       registers: instructionProcessed.registers,
-      lineNumbers,
       currentInstruction: this.state.currentInstruction + 1
     });
   }

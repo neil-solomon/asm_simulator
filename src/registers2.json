@@ -1,1 +1,5 @@
-[{ "name": "AX", "size": 16, "subRegisters": null }]
+[
+  { "name": "AX", "size": 8, "subRegisters": null },
+  { "name": "BX", "size": 16, "subRegisters": ["BH", "BL"] },
+  { "name": "CX", "size": 32, "subRegisters": ["C0", "C1", "C2", "C3"] }
+]

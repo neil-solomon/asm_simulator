@@ -9,9 +9,7 @@ export default class Register extends React.Component {
     if (this.props.subRegisters) {
       subRegisters = new Array(this.props.subRegisters.length);
       var subValueBi = new Array(this.props.size / subRegisters.length).fill(0),
-        subValueDec = new Array(
-          Math.ceil(this.props.size / (subRegisters.length * 3))
-        ).fill(0),
+        subValueDec = new Array(1).fill(0),
         subValueHex = new Array(
           this.props.size / (subRegisters.length * 4)
         ).fill("0");
@@ -24,7 +22,7 @@ export default class Register extends React.Component {
         };
       }
     }
-    var valueDec = new Array(Math.ceil(this.props.size / 3)).fill(0),
+    var valueDec = new Array(1).fill(0),
       valueHex = new Array(this.props.size / 4).fill("0");
     this.state = {
       valueBi: [...this.props.valueBi],
@@ -110,7 +108,7 @@ export default class Register extends React.Component {
 
   biToDec(valueBi) {
     var valueDec = new Array(Math.ceil(valueBi.length / 3)).fill(0);
-    for (let i = valueBi.length - 1; i >= 0; --i) {
+    for (let i = valueBi.length - 1; i > 0; --i) {
       if (valueBi[i]) {
         for (let j = 0; j < powersOfTwo[valueBi.length - i - 1].length; ++j) {
           valueDec[
@@ -126,8 +124,23 @@ export default class Register extends React.Component {
         }
       }
     }
+    if (valueBi[0]) {
+      for (let i = 0; i < powersOfTwo[valueBi.length - 1].length; ++i) {
+        valueDec[valueDec.length - powersOfTwo[valueBi.length - 1].length + i] =
+          powersOfTwo[valueBi.length - 1][i] -
+          valueDec[
+            valueDec.length - powersOfTwo[valueBi.length - 1].length + i
+          ];
+      }
+      for (let i = valueDec.length - 1; i > 0; --i) {
+        if (valueDec[i] < 0) {
+          valueDec[i] = 10 + valueDec[i];
+          valueDec[i - 1] -= 1;
+        }
+      }
+    }
     var valueDecIx = 0;
-    while (valueDec[valueDecIx] === 0) {
+    while (valueDec[valueDecIx] === 0 && valueDec.length > 1) {
       valueDec.splice(0, 1);
     }
     return valueDec;
@@ -138,6 +151,7 @@ export default class Register extends React.Component {
   }
 
   render() {
+    console.log(this.state.valueDec);
     return (
       <div className={this.state.className}>
         <div className="Register-mainRegister">
@@ -146,6 +160,7 @@ export default class Register extends React.Component {
             <span className="Register-size">{this.props.size / 8} byte(s)</span>
           </div>
           <div>
+            {this.state.valueBi[0] === 1 && <>-</>}
             {this.state.valueDec}
             <sub className="Register-baseSubscript">10</sub>
           </div>
@@ -171,6 +186,7 @@ export default class Register extends React.Component {
                 </span> */}
               </div>
               <div>
+                {subRegister.valueBi[0] === 1 && <>-</>}
                 {subRegister.valueDec}
                 <sub className="Register-baseSubscript">10</sub>
               </div>
