@@ -1,146 +1,136 @@
 import React from "react";
+import powersOfTwo from "./powersOfTwo.json";
 import "./Register.css";
 
-export default class Register extends React.PureComponent {
+export default class Register extends React.Component {
   constructor(props) {
     super(props);
     var subRegisters;
     if (this.props.subRegisters) {
       subRegisters = new Array(this.props.subRegisters.length);
-      var subValueBi = "",
-        subValueHex = "";
-      for (let i = 0; i < (this.props.size * 8) / subRegisters.length; ++i) {
-        subValueBi += "0";
-        if (i % 4 === 0) {
-          subValueHex += "0";
-        }
-      }
+      var subValueBi = new Array(this.props.size / subRegisters.length).fill(0),
+        subValueDec = new Array(
+          Math.ceil(this.props.size / (subRegisters.length * 3))
+        ).fill(0),
+        subValueHex = new Array(
+          this.props.size / (subRegisters.length * 4)
+        ).fill("0");
       for (let i = 0; i < subRegisters.length; ++i) {
         subRegisters[i] = {
           name: this.props.subRegisters[i],
-          valueDec: 0,
+          valueDec: subValueDec,
           valueBi: subValueBi,
           valueHex: subValueHex
         };
       }
     }
-    var valueBi = "",
-      valueHex = "";
-    for (let i = 0; i < this.props.size * 8; ++i) {
-      valueBi += "0";
-      if (i % 4 === 0) {
-        valueHex += "0";
-      }
-    }
+    var valueDec = new Array(Math.ceil(this.props.size / 3)).fill(0),
+      valueHex = new Array(this.props.size / 4).fill("0");
     this.state = {
-      valueBi: valueBi,
+      valueBi: [...this.props.valueBi],
+      valueDec: valueDec,
       valueHex: valueHex,
       subRegisters: subRegisters,
       className: "Register",
       resetClassNameTimeout: null
     };
     this.resetClassName = this.resetClassName.bind(this);
+    this.biToDec = this.biToDec.bind(this);
+    this.biToHex = this.biToHex.bind(this);
   }
 
   componentWillUnmount() {
     clearTimeout(this.state.resetClassNameTimeout);
   }
 
-  componentDidUpdate(prevProps) {
-    if (prevProps.value !== this.props.value) {
-      var valueBi = "",
-        valueHex = "",
-        hexDigit = "",
-        currentValue = this.props.value;
-      while (currentValue) {
-        hexDigit = (currentValue % 16).toString();
-        if (hexDigit === "10") {
-          hexDigit = "A";
-        }
-        if (hexDigit === "11") {
-          hexDigit = "B";
-        }
-        if (hexDigit === "12") {
-          hexDigit = "C";
-        }
-        if (hexDigit === "13") {
-          hexDigit = "D";
-        }
-        if (hexDigit === "14") {
-          hexDigit = "E";
-        }
-        if (hexDigit === "15") {
-          hexDigit = "F";
-        }
-        valueHex = hexDigit + valueHex;
-        currentValue = Math.floor(currentValue / 16);
-      }
-      while (valueHex.length < this.props.size * 2) {
-        valueHex = "0" + valueHex;
-      }
-      currentValue = this.props.value;
-      while (currentValue) {
-        valueBi = (currentValue % 2).toString() + valueBi;
-        currentValue = Math.floor(currentValue / 2);
-      }
-      while (valueBi.length < this.props.size * 8) {
-        valueBi = "0" + valueBi;
-      }
-      var subRegisters = null;
+  componentDidUpdate() {
+    if (
+      JSON.stringify(this.state.valueBi) !== JSON.stringify(this.props.valueBi)
+    ) {
+      var valueDec = this.biToDec(this.props.valueBi),
+        valueHex = this.biToHex(this.props.valueBi);
       if (this.state.subRegisters) {
-        subRegisters = [...this.state.subRegisters];
-        var valueHexArray, valueHexDigit;
+        var subRegisters = [...this.state.subRegisters];
         for (let i = 0; i < subRegisters.length; ++i) {
-          subRegisters[i].valueBi = valueBi.slice(
-            i * (valueBi.length / subRegisters.length),
-            i * (valueBi.length / subRegisters.length) +
-              valueBi.length / subRegisters.length
+          subRegisters[i].valueBi = this.props.valueBi.slice(
+            i * (this.props.valueBi.length / subRegisters.length),
+            i * (this.props.valueBi.length / subRegisters.length) +
+              this.props.valueBi.length / subRegisters.length
           );
           subRegisters[i].valueHex = valueHex.slice(
             i * (valueHex.length / subRegisters.length),
             i * (valueHex.length / subRegisters.length) +
               valueHex.length / subRegisters.length
           );
-          subRegisters[i].valueDec = 0;
-          valueHexArray = subRegisters[i].valueHex.split("");
-          for (let j = 0; j < valueHexArray.length; ++j) {
-            switch (valueHexArray[j]) {
-              case "A":
-                valueHexDigit = 10;
-                break;
-              case "B":
-                valueHexDigit = 11;
-                break;
-              case "C":
-                valueHexDigit = 12;
-                break;
-              case "D":
-                valueHexDigit = 13;
-                break;
-              case "E":
-                valueHexDigit = 14;
-                break;
-              case "F":
-                valueHexDigit = 15;
-                break;
-              default:
-                valueHexDigit = parseInt(valueHexArray[j]);
-                break;
-            }
-            subRegisters[i].valueDec +=
-              Math.pow(16, valueHexArray.length - j - 1) * valueHexDigit;
-          }
+          subRegisters[i].valueDec = this.biToDec(subRegisters[i].valueBi);
         }
       }
       var resetClassNameTimeout = setTimeout(() => this.resetClassName(), 250);
       this.setState({
-        valueBi,
+        valueBi: [...this.props.valueBi],
+        valueDec,
         valueHex,
         subRegisters,
         className: "Register-change",
         resetClassNameTimeout
       });
     }
+  }
+
+  biToHex(valueBi) {
+    var valueHex = new Array(this.props.size / 4).fill("0"),
+      hexDigit;
+    var valueHexIx = valueHex.length - 1;
+    for (let i = valueBi.length - 1; i >= 0; i -= 4) {
+      hexDigit =
+        valueBi[i] +
+        valueBi[i - 1] * 2 +
+        valueBi[i - 2] * 4 +
+        valueBi[i - 3] * 8;
+      if (hexDigit === 10) {
+        hexDigit = "A";
+      } else if (hexDigit === 11) {
+        hexDigit = "B";
+      } else if (hexDigit === 12) {
+        hexDigit = "C";
+      } else if (hexDigit === 13) {
+        hexDigit = "D";
+      } else if (hexDigit === 14) {
+        hexDigit = "E";
+      } else if (hexDigit === 15) {
+        hexDigit = "F";
+      } else {
+        hexDigit = hexDigit.toString();
+      }
+      valueHex[valueHexIx] = hexDigit;
+      valueHexIx -= 1;
+    }
+    return valueHex;
+  }
+
+  biToDec(valueBi) {
+    var valueDec = new Array(Math.ceil(valueBi.length / 3)).fill(0);
+    for (let i = valueBi.length - 1; i >= 0; --i) {
+      if (valueBi[i]) {
+        for (let j = 0; j < powersOfTwo[valueBi.length - i - 1].length; ++j) {
+          valueDec[
+            valueDec.length - powersOfTwo[valueBi.length - i - 1].length + j
+          ] += parseInt(powersOfTwo[valueBi.length - i - 1][j]);
+        }
+        for (let j = 0; j < valueDec.length; ++j) {
+          if (valueDec[j] > 9) {
+            valueDec[j] = valueDec[j] % 10;
+            valueDec[j - 1] += 1;
+            --j;
+          }
+        }
+      }
+    }
+    var valueDecIx = 0;
+    while (valueDec[valueDecIx] === 0) {
+      valueDec.splice(0, 1);
+    }
+    return valueDec;
   }
 
   resetClassName() {
@@ -153,19 +143,19 @@ export default class Register extends React.PureComponent {
         <div className="Register-mainRegister">
           <div>
             <span className="Register-name">{this.props.name}</span>
-            <span className="Register-size">{this.props.size} byte(s)</span>
+            <span className="Register-size">{this.props.size / 8} byte(s)</span>
           </div>
           <div>
-            {this.props.value}
-            <sub>10</sub>
+            {this.state.valueDec}
+            <sub className="Register-baseSubscript">10</sub>
           </div>
           <div>
             {this.state.valueHex}
-            <sub>16</sub>
+            <sub className="Register-baseSubscript">16</sub>
           </div>
           <div>
             {this.state.valueBi}
-            <sub>2</sub>
+            <sub className="Register-baseSubscript">2</sub>
           </div>
         </div>
         {this.state.subRegisters &&
@@ -182,15 +172,15 @@ export default class Register extends React.PureComponent {
               </div>
               <div>
                 {subRegister.valueDec}
-                <sub>10</sub>
+                <sub className="Register-baseSubscript">10</sub>
               </div>
               <div>
                 {subRegister.valueHex}
-                <sub>16</sub>
+                <sub className="Register-baseSubscript">16</sub>
               </div>
               <div>
                 {subRegister.valueBi}
-                <sub>2</sub>
+                <sub className="Register-baseSubscript">2</sub>
               </div>
             </div>
           ))}

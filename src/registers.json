@@ -1,8 +1,6 @@
-{
-  "registers": [
-    { "name": "AX", "size": 2, "subRegisters": ["AH", "AL"] },
-    { "name": "BX", "size": 2, "subRegisters": ["BH", "BL"] },
-    { "name": "CX", "size": 2, "subRegisters": ["CH", "CL"] },
-    { "name": "DX", "size": 2, "subRegisters": ["DH", "DL"] }
-  ]
-}
+[
+  { "name": "AX", "size": 16, "subRegisters": ["AH", "AL"] },
+  { "name": "BX", "size": 16, "subRegisters": ["BH", "BL"] },
+  { "name": "CX", "size": 16, "subRegisters": ["CH", "CL"] },
+  { "name": "DX", "size": 16, "subRegisters": ["DH", "DL"] }
+]

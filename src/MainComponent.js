@@ -6,9 +6,9 @@ import LineNumber from "./LineNumber";
 export default class MainComponent extends React.Component {
   constructor(props) {
     super(props);
-    const registers = require("./registers.json")["registers"];
+    const registers = require("./registers.json");
     for (let i = 0; i < registers.length; ++i) {
-      registers[i].value = 0;
+      registers[i].valueBi = new Array(registers[i].size).fill(0);
     }
     this.state = {
       registers: registers,
@@ -18,12 +18,14 @@ export default class MainComponent extends React.Component {
       runAllInterval: null
     };
     this.runStep = this.runStep.bind(this);
-    this.changeValues = this.changeValues.bind(this);
+    this.randomValue = this.randomValue.bind(this);
     this.clearRegisters = this.clearRegisters.bind(this);
     this.updateLineNumbers = this.updateLineNumbers.bind(this);
     this.processNextInstruction = this.processNextInstruction.bind(this);
     this.runAll = this.runAll.bind(this);
     this.runAllInstructions = this.runAllInstructions.bind(this);
+    this.findDestinationAndSource = this.findDestinationAndSource.bind(this);
+    this.immToBi = this.immToBi.bind(this);
   }
 
   componentWillUnmount() {
@@ -53,37 +55,159 @@ export default class MainComponent extends React.Component {
     if (instruction && destination && source) {
       switch (instruction) {
         case "MOV":
-          if (isNaN(parseInt(destination))) {
-            var destinationIx = null,
-              sourceIx = null;
-            if (isNaN(parseInt(source))) {
-              for (let i = 0; i < registers.length; ++i) {
-                if (registers[i].name === source) {
-                  sourceIx = i;
-                } else if (registers[i].name === destination) {
-                  destinationIx = i;
-                }
-              }
-              if (sourceIx !== null && destinationIx !== null) {
-                registers[destinationIx].value = registers[sourceIx].value;
-                error = false;
-              }
-            } else {
-              for (let i = 0; i < registers.length; ++i) {
-                if (registers[i].name === destination) {
-                  registers[i].value = parseInt(source);
-                  error = false;
-                  break;
-                }
-              }
-            }
-          }
+          var destinationAndSource = this.findDestinationAndSource(
+            registers,
+            destination,
+            source
+          );
+          console.log(destinationAndSource);
           break;
         default:
           break;
       }
     }
     return { registers: registers, error: error };
+  }
+
+  findDestinationAndSource(registers, destination, source) {
+    if (isNaN(parseInt(destination))) {
+      var destinationIx = null,
+        sourceIx = null,
+        subSourceIx = null,
+        subDestinationIx = null,
+        sourceValue;
+      if (
+        isNaN(parseInt(source)) &&
+        source[source.length - 1] !== "b" &&
+        source[source.length - 1] !== "h"
+      ) {
+        for (let i = 0; i < registers.length; ++i) {
+          if (registers[i].name === source) {
+            sourceIx = i;
+          } else if (registers[i].name === destination) {
+            destinationIx = i;
+          }
+          if (registers[i].subRegisters) {
+            for (let j = 0; j < registers[i].subRegisters.length; ++j) {
+              if (registers[i].subRegisters[j] === source) {
+                sourceIx = i;
+                subSourceIx = j;
+              } else if (registers[i].subRegisters[j] === destination) {
+                destinationIx = i;
+                subDestinationIx = j;
+              }
+            }
+          }
+        }
+        if (sourceIx !== null && destinationIx !== null) {
+          if (subSourceIx === null && subDestinationIx === null) {
+            sourceValue = registers[sourceIx].valueBi;
+            // console.log("mainSource & mainDestination");
+          } else if (subSourceIx !== null && subDestinationIx === null) {
+            // console.log("subSource & mainDestination");
+          } else if (subSourceIx === null && destinationIx !== null) {
+            sourceValue = registers[sourceIx].value;
+            // console.log("mainSource & subDestination");
+          } else if (subSourceIx !== null && subDestinationIx !== null) {
+            // console.log("subSource & subDestination");
+          }
+        }
+      } else {
+        sourceValue = this.immToBi(source);
+        for (let i = 0; i < registers.length; ++i) {
+          if (registers[i].name === destination) {
+            destinationIx = i;
+            // console.log("immediate & mainDestination");
+          }
+          if (registers[i].subRegisters) {
+            for (let j = 0; j < registers[i].subRegisters.length; ++j) {
+              if (registers[i].subRegisters[j] === destination) {
+                subDestinationIx = j;
+                destinationIx = i;
+                // console.log("immediate and subDestination");
+              }
+            }
+          }
+        }
+      }
+    }
+    return {
+      destinationIx: destinationIx,
+      subDestinationIx: subDestinationIx,
+      source: sourceValue
+    };
+  }
+
+  immToBi(source) {
+    var sourceValue = [];
+    if (source[source.length - 1] === "h") {
+      var sourceHex = source.slice(0, source.length - 1).split("");
+      for (let i = 0; i < sourceHex.length; ++i) {
+        switch (sourceHex[i]) {
+          case "0":
+            sourceValue.push(0, 0, 0, 0);
+            break;
+          case "1":
+            sourceValue.push(0, 0, 0, 1);
+            break;
+          case "2":
+            sourceValue.push(0, 0, 1, 0);
+            break;
+          case "3":
+            sourceValue.push(0, 0, 1, 1);
+            break;
+          case "4":
+            sourceValue.push(0, 1, 0, 0);
+            break;
+          case "5":
+            sourceValue.push(0, 1, 0, 1);
+            break;
+          case "6":
+            sourceValue.push(0, 1, 1, 0);
+            break;
+          case "7":
+            sourceValue.push(0, 1, 1, 1);
+            break;
+          case "8":
+            sourceValue.push(1, 0, 0, 0);
+            break;
+          case "9":
+            sourceValue.push(1, 0, 0, 1);
+            break;
+          case "A":
+            sourceValue.push(1, 0, 1, 0);
+            break;
+          case "B":
+            sourceValue.push(1, 0, 1, 1);
+            break;
+          case "C":
+            sourceValue.push(1, 1, 0, 0);
+            break;
+          case "D":
+            sourceValue.push(1, 1, 0, 1);
+            break;
+          case "E":
+            sourceValue.push(1, 1, 1, 0);
+            break;
+          case "F":
+            sourceValue.push(1, 1, 1, 1);
+            break;
+          default:
+            break;
+        }
+      }
+    } else if (source[source.length - 1] === "b") {
+      sourceValue = source.slice(0, source.length - 1).split("");
+      for (let i = 0; i < sourceValue.length; ++i) {
+        sourceValue[i] = parseInt(sourceValue[i]);
+      }
+    } else {
+      while (source) {
+        sourceValue.unshift(source % 2);
+        source = Math.floor(source / 2);
+      }
+    }
+    return sourceValue;
   }
 
   runStep() {
@@ -149,12 +273,12 @@ export default class MainComponent extends React.Component {
     this.setState({ lineNumbers, currentInstruction: 0 });
   }
 
-  changeValues() {
+  randomValue() {
     var registers = [...this.state.registers];
-    var ix = Math.round(Math.random() * 10000000000) % registers.length;
-    registers[ix].value =
-      Math.round(Math.random() * 10000000000) %
-      Math.pow(2, registers[ix].size * 8);
+    var ix = Math.round(Math.random() * 1000000) % registers.length;
+    for (let i = 0; i < registers[ix].valueBi.length; ++i) {
+      registers[ix].valueBi[i] = Math.round(Math.random() * 1000000) % 2;
+    }
     this.setState({ registers });
   }
 
@@ -170,7 +294,7 @@ export default class MainComponent extends React.Component {
       lineNumbers[i].error = false;
     }
     for (let i = 0; i < registers.length; ++i) {
-      registers[i].value = 0;
+      registers[i].valueBi = new Array(registers[i].size).fill(0);
     }
     this.setState({ registers, currentInstruction: 0 });
   }
@@ -183,7 +307,7 @@ export default class MainComponent extends React.Component {
           <div>
             <button onClick={this.runStep}>RUN STEP</button>
             <button onClick={this.runAll}>RUN ALL</button>
-            <button onClick={this.changeValues}>Random Value</button>
+            <button onClick={this.randomValue}>Random Value</button>
             <button onClick={this.clearRegisters}>Clear Registers</button>
           </div>
           <div className="MainComponent-lineNumbers">
@@ -208,7 +332,7 @@ export default class MainComponent extends React.Component {
               key={"register" + register.name}
               name={register.name}
               size={register.size}
-              value={register.value}
+              valueBi={register.valueBi}
               subRegisters={register.subRegisters}
             ></Register>
           ))}
