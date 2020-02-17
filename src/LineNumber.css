@@ -1,0 +1,19 @@
+.LineNumber-name {
+  font-size: 16px;
+  display: inline-block;
+  width: 20px;
+  text-align: center;
+}
+
+.LineNumber-current {
+  color: rgb(103, 58, 183);
+  font-size: 12px;
+  display: inline-block;
+  width: 20px;
+}
+
+.LineNumber-error {
+  color: rgb(255, 87, 34);
+  font-size: 12px;
+  display: inline-block;
+}

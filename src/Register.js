@@ -1,4 +1,5 @@
 import React from "react";
+import gsap from "gsap";
 import powersOfTwo from "./powersOfTwo.json";
 import "./Register.css";
 
@@ -28,17 +29,10 @@ export default class Register extends React.Component {
       valueBi: [...this.props.valueBi],
       valueDec: valueDec,
       valueHex: valueHex,
-      subRegisters: subRegisters,
-      className: "Register",
-      resetClassNameTimeout: null
+      subRegisters: subRegisters
     };
-    this.resetClassName = this.resetClassName.bind(this);
     this.biToDec = this.biToDec.bind(this);
     this.biToHex = this.biToHex.bind(this);
-  }
-
-  componentWillUnmount() {
-    clearTimeout(this.state.resetClassNameTimeout);
   }
 
   componentDidUpdate() {
@@ -63,14 +57,26 @@ export default class Register extends React.Component {
           subRegisters[i].valueDec = this.biToDec(subRegisters[i].valueBi);
         }
       }
-      var resetClassNameTimeout = setTimeout(() => this.resetClassName(), 250);
+      var timeline = gsap.timeline();
+      timeline
+        .set("#" + this.props.id, {
+          // backgroundColor: "rgb(255, 87, 34)"
+          color: "rgb(255,87,34)"
+        })
+        .to(
+          "#" + this.props.id,
+          {
+            duration: 0.5,
+            // backgroundColor: null
+            color: "rgb(33,33,33)"
+          },
+          "+=.25"
+        );
       this.setState({
         valueBi: [...this.props.valueBi],
         valueDec,
         valueHex,
-        subRegisters,
-        className: "Register-change",
-        resetClassNameTimeout
+        subRegisters
       });
     }
   }
@@ -146,14 +152,9 @@ export default class Register extends React.Component {
     return valueDec;
   }
 
-  resetClassName() {
-    this.setState({ className: "Register" });
-  }
-
   render() {
-    console.log(this.state.valueDec);
     return (
-      <div className={this.state.className}>
+      <div className="Register" id={this.props.id}>
         <div className="Register-mainRegister">
           <div>
             <span className="Register-name">{this.props.name}</span>

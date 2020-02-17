@@ -11,22 +11,21 @@
   background-image: linear-gradient(rgb(81, 45, 168), rgb(103, 58, 183));
   width: 100%;
   height: auto;
-  box-shadow: 0px 2.5px 5px rgb(117, 117, 117, 0.75);
+  box-shadow: 0px 2.5px 5px rgb(117, 117, 117, 1);
 }
 
 .MainComponent-codeInputContainer {
   vertical-align: top;
   text-align: center;
   display: inline-block;
-  padding-right: 2vw;
+  padding-right: 1vw;
   padding-top: 1vw;
   padding-bottom: 1vw;
   width: auto;
   height: auto;
   margin-left: 2vw;
   margin-top: 2vw;
-  border: 1px solid rgb(117, 117, 117);
-  box-shadow: 0px 2.5px 10px rgb(117, 117, 117, 0.75);
+  box-shadow: 2.5px 2.5px 10px rgb(117, 117, 117, 0.75);
   border-radius: 5px;
 }
 
@@ -38,26 +37,14 @@
 }
 
 .MainComponent-lineNumbers {
+  text-align: right;
   display: inline-block;
   vertical-align: top;
   padding-top: 3px;
-  /* padding-right: 0.25vw;
-  padding-left: 0.25vw; */
-  width: 2vw;
+  /* padding-right: 0.5vw; */
+  /*padding-left: 0.25vw; */
+  width: 10vw;
   font-family: "Courier New", Courier, monospace;
-}
-
-.MainComponent-currentLineNumber {
-  animation: currentLineNumber 0.5s forwards;
-}
-
-@keyframes currentLineNumber {
-  0% {
-    background-color: none;
-  }
-  100% {
-    background-color: rgb(255, 87, 34, 0.5);
-  }
 }
 
 .MainComponent-registers {
@@ -69,7 +56,6 @@
   height: auto;
   margin-left: 2vw;
   margin-top: 2vw;
-  border: 1px solid rgb(117, 117, 117);
-  box-shadow: 0px 2.5px 10px rgb(117, 117, 117, 0.75);
+  box-shadow: 2.5px 2.5px 10px rgb(117, 117, 117, 0.75);
   border-radius: 5px;
 }

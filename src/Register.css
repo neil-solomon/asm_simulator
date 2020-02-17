@@ -2,28 +2,8 @@
   font-size: 14px;
   margin-bottom: 20px;
   text-align: center;
-}
-
-.Register-change {
-  font-size: 14px;
-  margin-bottom: 20px;
+  background-color: none;
   border-radius: 5px;
-  animation: registerFlash 0.25s forwards;
-}
-
-@keyframes registerFlash {
-  0% {
-    background-color: none;
-  }
-  25% {
-    background-color: rgb(255, 87, 34);
-  }
-  75% {
-    background-color: rgb(255, 87, 34);
-  }
-  100% {
-    background-color: none;
-  }
 }
 
 .Register-name {

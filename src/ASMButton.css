@@ -1,0 +1,19 @@
+.ASMButton {
+  font-size: 16px;
+  border-radius: 5px;
+  background-color: white;
+  cursor: pointer;
+  padding: 5px;
+  box-shadow: inset 0px 0px 0px rgb(117, 117, 117, 0.5);
+}
+
+.ASMButtonContainer {
+  box-shadow: 1.5px 1.5px 1.5px rgb(117, 117, 117, 0.5);
+  display: inline-block;
+  padding: none;
+  border-radius: 5px;
+  border: 1px solid rgb(209, 196, 233);
+  margin-left: 10px;
+  margin-right: 10px;
+  margin-bottom: 10px;
+}

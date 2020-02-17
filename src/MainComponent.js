@@ -2,6 +2,7 @@ import React from "react";
 import "./MainComponent.css";
 import Register from "./Register";
 import LineNumber from "./LineNumber";
+import ASMButton from "./ASMButton";
 
 export default class MainComponent extends React.Component {
   constructor(props) {
@@ -12,7 +13,19 @@ export default class MainComponent extends React.Component {
     }
     this.state = {
       registers: registers,
-      lineNumbers: [{ name: 1, current: true, error: false }],
+      lineNumbers: [
+        {
+          name: 1,
+          current: true,
+          error: {
+            parsing: false,
+            instruction: false,
+            destination: false,
+            source: false,
+            overflow: false
+          }
+        }
+      ],
       currentInstruction: 0,
       numInstructions: 0,
       runAllInterval: null
@@ -36,7 +49,13 @@ export default class MainComponent extends React.Component {
     var instruction,
       destination,
       source,
-      error = true,
+      error = {
+        parsing: false,
+        destination: false,
+        source: false,
+        overflow: false,
+        instruction: false
+      },
       registers = [...this.state.registers],
       codeInput = document.getElementById("codeInput").value.split("\n");
     if (codeInput.length >= this.state.currentInstruction) {
@@ -48,8 +67,6 @@ export default class MainComponent extends React.Component {
         destination = codeInput[1].split(",")[0];
         source = codeInput[2];
       }
-    } else if (codeInput.length === 1 && codeInput[0] === "") {
-      error = false;
     }
     if (instruction && destination && source) {
       var destinationAndSource = this.findDestinationAndSource(
@@ -60,9 +77,7 @@ export default class MainComponent extends React.Component {
       var dIx = destinationAndSource.destinationIx,
         sdIx = destinationAndSource.subDestinationIx,
         sourceValue = destinationAndSource.source;
-      //console.log(dIx, sdIx, sourceValue);
       if (dIx !== null && sourceValue !== null) {
-        error = false;
         if (sdIx !== null) {
           while (
             sourceValue.length <
@@ -211,10 +226,21 @@ export default class MainComponent extends React.Component {
             }
             break;
           default:
+            error.instruction = true;
             break;
         }
+      } else {
+        if (dIx === null) {
+          error.destination = true;
+        }
+        if (sourceValue === null) {
+          error.source = true;
+        }
       }
+    } else if (!(codeInput.length === 1 && codeInput[0] === "")) {
+      error.parsing = true;
     }
+
     return { registers: registers, error: error };
   }
 
@@ -248,11 +274,10 @@ export default class MainComponent extends React.Component {
             }
           }
         }
-        if (sourceIx !== null && destinationIx !== null) {
-          if (subSourceIx === null && subDestinationIx === null) {
+        if (sourceIx !== null) {
+          if (subSourceIx === null) {
             sourceValue = registers[sourceIx].valueBi;
-            // console.log("mainSource & mainDestination");
-          } else if (subSourceIx !== null && subDestinationIx === null) {
+          } else {
             sourceValue = registers[sourceIx].valueBi.slice(
               subSourceIx *
                 (registers[sourceIx].size /
@@ -261,22 +286,37 @@ export default class MainComponent extends React.Component {
                 (registers[sourceIx].size /
                   registers[sourceIx].subRegisters.length)
             );
-            // console.log("subSource & mainDestination");
-          } else if (subSourceIx === null && destinationIx !== null) {
-            sourceValue = registers[sourceIx].valueBi;
-            // console.log("mainSource & subDestination");
-          } else if (subSourceIx !== null && subDestinationIx !== null) {
-            sourceValue = registers[sourceIx].valueBi.slice(
-              subSourceIx *
-                (registers[sourceIx].size /
-                  registers[sourceIx].subRegisters.length),
-              (subSourceIx + 1) *
-                (registers[sourceIx].size /
-                  registers[sourceIx].subRegisters.length)
-            );
-            // console.log("subSource & subDestination");
           }
         }
+        // if (sourceIx !== null && destinationIx !== null) {
+        //   if (subSourceIx === null && subDestinationIx === null) {
+        //     sourceValue = registers[sourceIx].valueBi;
+        //     // console.log("mainSource & mainDestination");
+        //   } else if (subSourceIx !== null && subDestinationIx === null) {
+        //     sourceValue = registers[sourceIx].valueBi.slice(
+        //       subSourceIx *
+        //         (registers[sourceIx].size /
+        //           registers[sourceIx].subRegisters.length),
+        //       (subSourceIx + 1) *
+        //         (registers[sourceIx].size /
+        //           registers[sourceIx].subRegisters.length)
+        //     );
+        //     // console.log("subSource & mainDestination");
+        //   } else if (subSourceIx === null && destinationIx !== null) {
+        //     sourceValue = registers[sourceIx].valueBi;
+        //     // console.log("mainSource & subDestination");
+        //   } else if (subSourceIx !== null && subDestinationIx !== null) {
+        //     sourceValue = registers[sourceIx].valueBi.slice(
+        //       subSourceIx *
+        //         (registers[sourceIx].size /
+        //           registers[sourceIx].subRegisters.length),
+        //       (subSourceIx + 1) *
+        //         (registers[sourceIx].size /
+        //           registers[sourceIx].subRegisters.length)
+        //     );
+        //     // console.log("subSource & subDestination");
+        //   }
+        // }
       } else {
         sourceValue = this.immToBi(source);
         for (let i = 0; i < registers.length; ++i) {
@@ -400,11 +440,35 @@ export default class MainComponent extends React.Component {
     ].current = true;
     lineNumbers[this.state.currentInstruction].current = false;
     var instructionProcessed = this.processNextInstruction();
-    if (instructionProcessed.error) {
-      lineNumbers[this.state.currentInstruction].error = true;
-    } else {
-      lineNumbers[this.state.currentInstruction].error = false;
+    for (const instructionError in instructionProcessed.error) {
+      lineNumbers[this.state.currentInstruction].error[instructionError] =
+        instructionProcessed.error[instructionError];
     }
+    // if (instructionProcessed.error.parsing) {
+    //   lineNumbers[this.state.currentInstruction].error.parsing = true;
+    // } else {
+    //   lineNumbers[this.state.currentInstruction].error.parsing = false;
+    // }
+    // if (instructionProcessed.error.destination) {
+    //   lineNumbers[this.state.currentInstruction].error.destination = true;
+    // } else {
+    //   lineNumbers[this.state.currentInstruction].error.destination = false;
+    // }
+    // if (instructionProcessed.error.source) {
+    //   lineNumbers[this.state.currentInstruction].error.source = true;
+    // } else {
+    //   lineNumbers[this.state.currentInstruction].error.source = false;
+    // }
+    // if (instructionProcessed.error.instruction) {
+    //   lineNumbers[this.state.currentInstruction].error.instruction = true;
+    // } else {
+    //   lineNumbers[this.state.currentInstruction].error.instruction = false;
+    // }
+    // if (instructionProcessed.error.overflow) {
+    //   lineNumbers[this.state.currentInstruction].error.overflow = true;
+    // } else {
+    //   lineNumbers[this.state.currentInstruction].error.overflow = false;
+    // }
     this.setState({
       lineNumbers,
       registers: instructionProcessed.registers,
@@ -438,9 +502,29 @@ export default class MainComponent extends React.Component {
     var lineNumbers = new Array(numLines);
     for (let i = 0; i < lineNumbers.length; ++i) {
       if (i === 0) {
-        lineNumbers[i] = { name: i + 1, current: true, error: false };
+        lineNumbers[i] = {
+          name: i + 1,
+          current: true,
+          error: {
+            parsing: false,
+            destination: false,
+            source: false,
+            overflow: false,
+            instruction: false
+          }
+        };
       } else {
-        lineNumbers[i] = { name: i + 1, current: false, error: false };
+        lineNumbers[i] = {
+          name: i + 1,
+          current: false,
+          error: {
+            parsing: false,
+            destination: false,
+            source: false,
+            overflow: false,
+            instruction: false
+          }
+        };
       }
     }
     this.setState({ lineNumbers, currentInstruction: 0 });
@@ -478,17 +562,33 @@ export default class MainComponent extends React.Component {
         <div className="MainComponent-header">ASM Simulator</div>
         <div className="MainComponent-codeInputContainer">
           <div>
-            <button onClick={this.runStep}>RUN STEP</button>
-            <button onClick={this.runAll}>RUN ALL</button>
-            <button onClick={this.randomValue}>Random Value</button>
-            <button onClick={this.clearRegisters}>Clear Registers</button>
+            <ASMButton
+              onClick={this.runStep}
+              name="Run Step"
+              id="runStep"
+            ></ASMButton>
+            <ASMButton
+              onClick={this.runAll}
+              name="Run All"
+              id="runAll"
+            ></ASMButton>
+            <ASMButton
+              onClick={this.clearRegisters}
+              name="Clear Registers"
+              id="clearRegisters"
+            ></ASMButton>
+            <ASMButton
+              onClick={this.randomValue}
+              name="Random Value"
+              id="randomValue"
+            ></ASMButton>
           </div>
           <div className="MainComponent-lineNumbers">
             {this.state.lineNumbers.map(line => (
               <LineNumber
                 key={"lineNumber" + line.name}
-                current={line.current}
                 error={line.error}
+                current={line.current}
                 name={line.name}
               ></LineNumber>
             ))}
@@ -503,6 +603,7 @@ export default class MainComponent extends React.Component {
           {this.state.registers.map(register => (
             <Register
               key={"register" + register.name}
+              id={"register" + register.name}
               name={register.name}
               size={register.size}
               valueBi={register.valueBi}
