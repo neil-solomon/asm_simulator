@@ -225,6 +225,27 @@ export default class MainComponent extends React.Component {
               }
             }
             break;
+          case "XNOR":
+            if (sdIx !== null) {
+              startIx =
+                sdIx *
+                (registers[dIx].size / registers[dIx].subRegisters.length);
+              endIx =
+                (sdIx + 1) *
+                (registers[dIx].size / registers[dIx].subRegisters.length);
+              for (let i = startIx; i < endIx; ++i) {
+                registers[dIx].valueBi[i] =
+                  registers[dIx].valueBi[i] === sourceValue[i - startIx]
+                    ? 1
+                    : 0;
+              }
+            } else {
+              for (let i = 0; i < registers[dIx].size; ++i) {
+                registers[dIx].valueBi[i] =
+                  registers[dIx].valueBi[i] === sourceValue[i] ? 1 : 0;
+              }
+            }
+            break;
           default:
             error.instruction = true;
             break;

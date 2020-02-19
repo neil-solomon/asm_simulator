@@ -1,5 +1,6 @@
 import React from "react";
-import MainComponent from "./MainComponent";
+import MainComponent from "./Components/MainComponent";
+import "antd/dist/antd.css";
 
 function App() {
   return (

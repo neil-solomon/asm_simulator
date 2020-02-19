@@ -27,7 +27,8 @@ export default class extends React.Component {
 
   onClick() {
     var timeline1 = gsap.timeline(),
-      timeline2 = gsap.timeline();
+      timeline2 = gsap.timeline(),
+      timeline3 = gsap.timeline();
     timeline1
       .to("#" + this.props.id, {
         duration: 0.15,
@@ -48,6 +49,15 @@ export default class extends React.Component {
         duration: 0.25,
         boxShadow: "1.5px 1.5px 1.5px rgb(117, 117, 117, 0.5)"
       });
+    timeline3
+      .to("#" + this.props.id + "Name", {
+        duration: 0.15,
+        scale: 0.9
+      })
+      .to("#" + this.props.id + "Name", {
+        duration: 0.15,
+        scale: 1
+      });
     this.props.onClick();
   }
 
@@ -61,7 +71,9 @@ export default class extends React.Component {
           onMouseEnter={this.onHoverIn}
           onMouseLeave={this.onHoverOut}
         >
-          {this.props.name}
+          <p className="ASMButtonName" id={this.props.id + "Name"}>
+            {this.props.name}
+          </p>
         </div>
       </div>
     );
